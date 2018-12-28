@@ -1,127 +1,201 @@
-version: '2'
+version: '3'
+
 services:
+
   zookeeper-1:
     image: confluentinc/cp-zookeeper:5.0.1
+    restart: always
     environment:
       ZOOKEEPER_SERVER_ID: 1
-      ZOOKEEPER_CLIENT_PORT: 22181
+      ZOOKEEPER_CLIENT_PORT: 12181
       ZOOKEEPER_TICK_TIME: 2000
       ZOOKEEPER_INIT_LIMIT: 5
       ZOOKEEPER_SYNC_LIMIT: 2
-      ZOOKEEPER_SERVERS: localhost:22888:23888;localhost:32888:33888;localhost:42888:43888
-    network_mode: host
-    extra_hosts:
-      - "moby:127.0.0.1"
+      ZOOKEEPER_SERVERS: "zookeeper-1:12888:13888;zookeeper-2:22888:23888;zookeeper-3:32888:33888"
+    ports:
+      - "12181:12181"
     container_name: zookeeper-1
 
   zookeeper-2:
     image: confluentinc/cp-zookeeper:5.0.1
+    restart: always
     environment:
       ZOOKEEPER_SERVER_ID: 2
-      ZOOKEEPER_CLIENT_PORT: 32181
+      ZOOKEEPER_CLIENT_PORT: 22181
       ZOOKEEPER_TICK_TIME: 2000
       ZOOKEEPER_INIT_LIMIT: 5
       ZOOKEEPER_SYNC_LIMIT: 2
-      ZOOKEEPER_SERVERS: localhost:22888:23888;localhost:32888:33888;localhost:42888:43888
-    network_mode: host
-    extra_hosts:
-      - "moby:127.0.0.1"
+      ZOOKEEPER_SERVERS: "zookeeper-1:12888:13888;zookeeper-2:22888:23888;zookeeper-3:32888:33888"
+    ports:
+      - "22181:22181"
     container_name: zookeeper-2
 
   zookeeper-3:
     image: confluentinc/cp-zookeeper:5.0.1
+    restart: always
     environment:
       ZOOKEEPER_SERVER_ID: 3
-      ZOOKEEPER_CLIENT_PORT: 42181
+      ZOOKEEPER_CLIENT_PORT: 32181
       ZOOKEEPER_TICK_TIME: 2000
       ZOOKEEPER_INIT_LIMIT: 5
       ZOOKEEPER_SYNC_LIMIT: 2
-      ZOOKEEPER_SERVERS: localhost:22888:23888;localhost:32888:33888;localhost:42888:43888
-    network_mode: host
-    extra_hosts:
-      - "moby:127.0.0.1"
+      ZOOKEEPER_SERVERS: "zookeeper-1:12888:13888;zookeeper-2:22888:23888;zookeeper-3:32888:33888"
+    ports:
+      - "32181:32181"
     container_name: zookeeper-3
 
   kafka-1:
     image: confluentinc/cp-kafka:5.0.1
-    network_mode: host
-    depends_on:
-      - zookeeper-1
-      - zookeeper-2
-      - zookeeper-3
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: localhost:22181,localhost:32181,localhost:42181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:19092
-    extra_hosts:
-      - "moby:127.0.0.1"
-    container_name: kafka-1
-
-  kafka-2:
-    image: confluentinc/cp-kafka:5.0.1
-    network_mode: host
-    depends_on:
-      - zookeeper-1
-      - zookeeper-2
-      - zookeeper-3
-    environment:
-      KAFKA_BROKER_ID: 2
-      KAFKA_ZOOKEEPER_CONNECT: localhost:22181,localhost:32181,localhost:42181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:29092
-    extra_hosts:
-      - "moby:127.0.0.1"
-    container_name: kafka-2
-
-  kafka-3:
-    image: confluentinc/cp-kafka:5.0.1
-    network_mode: host
-    depends_on:
-      - zookeeper-1
-      - zookeeper-2
-      - zookeeper-3
-    environment:
-      KAFKA_BROKER_ID: 3
-      KAFKA_ZOOKEEPER_CONNECT: localhost:22181,localhost:32181,localhost:42181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:39092
-    extra_hosts:
-      - "moby:127.0.0.1"
-    container_name: kafka-3
-
-  kt-curr-prod-btc:
-    build: ./kt-currency-producer
-    image: kt-currency-producer
-    network_mode: host
     restart: always
     depends_on:
       - zookeeper-1
       - zookeeper-2
       - zookeeper-3
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:12181,zookeeper-2:22181,zookeeper-3:32181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:19092
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_NUM_PARTITIONS: 3
+    ports:
+      - "19092:19092"
+    container_name: kafka-1
+
+  kafka-2:
+    image: confluentinc/cp-kafka:5.0.1
+    restart: always
+    depends_on:
+      - zookeeper-1
+      - zookeeper-2
+      - zookeeper-3
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:12181,zookeeper-2:22181,zookeeper-3:32181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:29092
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_NUM_PARTITIONS: 3
+    ports:
+      - "29092:29092"
+    container_name: kafka-2
+
+  kafka-3:
+    image: confluentinc/cp-kafka:5.0.1
+    restart: always
+    depends_on:
+      - zookeeper-1
+      - zookeeper-2
+      - zookeeper-3
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:12181,zookeeper-2:22181,zookeeper-3:32181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:39092
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_NUM_PARTITIONS: 3
+    ports:
+      - "39092:39092"
+    container_name: kafka-3
+
+  kt-curr-prod-btc:
+    build: https://github.com/rafamartinc/kt-currency-prod.git
+    image: kt-currency-producer
+    restart: always
+    depends_on:
       - kafka-1
       - kafka-2
       - kafka-3
     environment:
       SYMBOL: BTC
       REFERENCE: EUR
-      KAFKA_HOST: localhost
+      KAFKA_HOST: kafka-1
       KAFKA_PORT: 19092
       KAFKA_TOPIC: kt_currencies
     container_name: kt-curr-prod-btc
 
   kt-curr-prod-eth:
     image: kt-currency-producer
-    network_mode: host
     restart: always
     depends_on:
-      - zookeeper-1
-      - zookeeper-2
-      - zookeeper-3
       - kafka-1
       - kafka-2
       - kafka-3
     environment:
       SYMBOL: ETH
       REFERENCE: EUR
-      KAFKA_HOST: localhost
+      KAFKA_HOST: kafka-1
       KAFKA_PORT: 19092
       KAFKA_TOPIC: kt_currencies
     container_name: kt-curr-prod-eth
+
+  influxdb:
+    image: influxdb
+    restart: always
+    ports:
+      - "8086:8086"
+    environment:
+      INFLUXDB_DATA_ENGINE: tsm1
+    volumes:
+      - /volumes/influxdb/data:/var/lib/influxdb
+    container_name: influxdb
+
+  grafana:
+    image: grafana/grafana:5.2.4
+    restart: always
+    ports:
+      - "3000:3000"
+    links:
+      - influxdb
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    container_name: grafana
+
+  kt-curr-live-cons-1:
+    build: ./kt-currency-live-cons
+    image: kt-currency-live-cons
+    restart: always
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - influxdb
+    environment:
+      KAFKA_HOST: kafka-1
+      KAFKA_PORT: 19092
+      KAFKA_TOPIC: kt_currencies
+      INFLUX_HOST: influxdb
+      INFLUX_PORT: 8086
+      INFLUX_DB: currencies
+    container_name: kt-currency-live-cons-1
+
+  kt-curr-live-cons-2:
+    image: kt-currency-live-cons
+    restart: always
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - influxdb
+    environment:
+      KAFKA_HOST: kafka-1
+      KAFKA_PORT: 19092
+      KAFKA_TOPIC: kt_currencies
+      INFLUX_HOST: influxdb
+      INFLUX_PORT: 8086
+      INFLUX_DB: currencies
+    container_name: kt-currency-live-cons-2
+
+  kt-curr-live-cons-3:
+    image: kt-currency-live-cons
+    restart: always
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - influxdb
+    environment:
+      KAFKA_HOST: kafka-1
+      KAFKA_PORT: 19092
+      KAFKA_TOPIC: kt_currencies
+      INFLUX_HOST: influxdb
+      INFLUX_PORT: 8086
+      INFLUX_DB: currencies
+    container_name: kt-currency-live-cons-3
+
+volumes:
+  grafana-storage:
