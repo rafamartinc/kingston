@@ -93,7 +93,7 @@ services:
     container_name: kafka-3
 
   kt-curr-prod-btc:
-    build: https://github.com/rafamartinc/kt-currency-prod.git
+    build: https://github.com/rafamartinc/kt-currency-producer.git
     image: kt-currency-producer
     restart: always
     depends_on:
@@ -146,7 +146,7 @@ services:
     container_name: grafana
 
   kt-curr-live-cons-1:
-    build: ./kt-currency-live-cons
+    build: https://github.com/rafamartinc/kt-currency-live-cons.git
     image: kt-currency-live-cons
     restart: always
     depends_on:
