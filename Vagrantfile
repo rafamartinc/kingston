@@ -30,7 +30,7 @@ Vagrant.configure("2") do |config|
   config.vm.define "dockerhostvm"
 
   config.vm.provider "virtualbox" do |v|
-	  v.memory = 6144
+	  v.memory = 12288
 	  v.cpus = 4
   end
 
@@ -38,9 +38,10 @@ Vagrant.configure("2") do |config|
 
   # Mapeados de puertos.
   config.vm.network "public_network"
+  config.vm.network(:forwarded_port, guest: 3000, host: 3000)
   config.vm.network(:forwarded_port, guest: 80, host: 80)
   config.vm.network(:forwarded_port, guest: 443, host: 443)
-  config.vm.network(:forwarded_port, guest: 22, host: 22)
+  config.vm.network(:forwarded_port, guest: 8086, host: 8086)
   
   # Comentar en caso de no querer activar el proxy
   #config.proxy.http = "http://10.113.55.100:8080"
@@ -50,7 +51,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision :docker
   config.vm.provision "shell", inline: "ps aux | grep 'sshd:' | awk '{print $2}' | xargs kill"
 
-  config.vm.provision "shell", inline: <<-EOC
+  config.vm.provision "shell", inline: <<-SHELL
     test -e /usr/local/bin/docker-compose || \\
     curl -sSL https://github.com/docker/compose/releases/download/1.23.1/docker-compose-`uname -s`-`uname -m` \\
       | sudo tee /usr/local/bin/docker-compose > /dev/null
@@ -58,7 +59,14 @@ Vagrant.configure("2") do |config|
     test -e /etc/bash_completion.d/docker-compose || \\
     curl -sSL https://raw.githubusercontent.com/docker/compose/$(docker-compose --version | awk 'NR==1{print $NF}')/contrib/completion/bash/docker-compose \\
       | sudo tee /etc/bash_completion.d/docker-compose > /dev/null
-  EOC
+  SHELL
+
+  config.vm.provision "shell", inline: <<-SHELL
+    sudo apt-get update
+    sudo apt-get install -y git
+  SHELL
+
+  config.vm.provision "shell", inline: "sudo apt-get autoremove -y"
 
   #config.vm.provision "shell" do |sh|
   #  sh.inline = 'docker-compose -f /vagrant/docker-compose.yml up -d --build'
