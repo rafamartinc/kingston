@@ -55,7 +55,7 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:12181,zookeeper-2:22181,zookeeper-3:32181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:19092
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
-      KAFKA_NUM_PARTITIONS: 2
+      KAFKA_NUM_PARTITIONS: 5
     ports:
       - "19092:19092"
     container_name: kafka-1
@@ -71,7 +71,7 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:12181,zookeeper-2:22181,zookeeper-3:32181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:29092
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
-      KAFKA_NUM_PARTITIONS: 2
+      KAFKA_NUM_PARTITIONS: 5
     ports:
       - "29092:29092"
     container_name: kafka-2
@@ -87,7 +87,7 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:12181,zookeeper-2:22181,zookeeper-3:32181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:39092
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
-      KAFKA_NUM_PARTITIONS: 2
+      KAFKA_NUM_PARTITIONS: 5
     ports:
       - "39092:39092"
     container_name: kafka-3
