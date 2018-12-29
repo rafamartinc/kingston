@@ -52,13 +52,9 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", inline: "ps aux | grep 'sshd:' | awk '{print $2}' | xargs kill"
 
   config.vm.provision "shell", inline: <<-SHELL
-    test -e /usr/local/bin/docker-compose || \\
-    curl -sSL https://github.com/docker/compose/releases/download/1.23.1/docker-compose-`uname -s`-`uname -m` \\
-      | sudo tee /usr/local/bin/docker-compose > /dev/null
+    test -e /usr/local/bin/docker-compose || curl -sSL https://github.com/docker/compose/releases/download/1.23.1/docker-compose-`uname -s`-`uname -m` | sudo tee /usr/local/bin/docker-compose > /dev/null
     sudo chmod +x /usr/local/bin/docker-compose
-    test -e /etc/bash_completion.d/docker-compose || \\
-    curl -sSL https://raw.githubusercontent.com/docker/compose/$(docker-compose --version | awk 'NR==1{print $NF}')/contrib/completion/bash/docker-compose \\
-      | sudo tee /etc/bash_completion.d/docker-compose > /dev/null
+    test -e /etc/bash_completion.d/docker-compose || curl -sSL https://raw.githubusercontent.com/docker/compose/$(docker-compose --version | awk 'NR==1{print $NF}')/contrib/completion/bash/docker-compose | sudo tee /etc/bash_completion.d/docker-compose > /dev/null
   SHELL
 
   config.vm.provision "shell", inline: <<-SHELL
