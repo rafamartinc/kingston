@@ -153,8 +153,7 @@ services:
       - kafka-3
       - influxdb
     environment:
-      KAFKA_HOST: kafka-1
-      KAFKA_PORT: 19092
+      KAFKA_SERVERS: kafka-1:19092,kafka-2:29092,kafka-3:39092
       KAFKA_TOPIC: kt_currencies
       INFLUX_HOST: influxdb
       INFLUX_PORT: 8086
@@ -170,8 +169,7 @@ services:
       - kafka-3
       - influxdb
     environment:
-      KAFKA_HOST: kafka-1
-      KAFKA_PORT: 19092
+      KAFKA_SERVERS: kafka-1:19092,kafka-2:29092,kafka-3:39092
       KAFKA_TOPIC: kt_currencies
       INFLUX_HOST: influxdb
       INFLUX_PORT: 8086
@@ -187,8 +185,7 @@ services:
       - kafka-3
       - influxdb
     environment:
-      KAFKA_HOST: kafka-1
-      KAFKA_PORT: 19092
+      KAFKA_SERVERS: kafka-1:19092,kafka-2:29092,kafka-3:39092
       KAFKA_TOPIC: kt_currencies
       INFLUX_HOST: influxdb
       INFLUX_PORT: 8086
